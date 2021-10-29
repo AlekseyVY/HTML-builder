@@ -1,10 +1,6 @@
 const fs = require('fs');
 const path = require('path/posix');
 
-fs.mkdir(path.join(__dirname, 'files-copy'), { recursive: true }, (err) => {
-  if (err) throw err;
-
-});
 
 fs.readdir(path.join(__dirname, 'files-copy'),{withFileTypes: true}, (err, files) => {
   if (err) process.stderr.write(err);
@@ -21,6 +17,3 @@ fs.readdir(path.join(__dirname, 'files-copy'),{withFileTypes: true}, (err, files
     });
   });
 });
-
-
-
