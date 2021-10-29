@@ -27,7 +27,8 @@ rl.on('SIGINT', () => {
 const exit = (data) => {
   if(data === 'exit') {
     process.stdout.write('Thanks for your wisdom!!!');
-    writeStream.end();    rl.close();
+    writeStream.end();
+    rl.close();
     return false;
   }
   return true;
