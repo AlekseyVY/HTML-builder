@@ -1,7 +1,7 @@
 const fs = require('fs');
-const path = require('path/posix');
+const path = require('path');
 
-
+fs.mkdir(path.join(__dirname, 'files-copy'), {recursive: true}, () => {});
 fs.readdir(path.join(__dirname, 'files-copy'),{withFileTypes: true}, (err, files) => {
   if (err) process.stderr.write(err);
   files.forEach((file) => {
