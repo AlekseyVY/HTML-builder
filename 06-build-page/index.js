@@ -1,6 +1,11 @@
 const fs = require('fs');
+const { type } = require('os');
 const path = require('path/posix');
 
+
+try {
+  fs.rm(dest, {recursive: true, force: true}, () => {});
+} catch(err) {}
 
 // copy assets folder
 const copy = async (src, dest) => {
@@ -49,22 +54,17 @@ fs.readdir(path.join(__dirname, 'styles'),{withFileTypes: true}, (err, files) =>
 
 
 // build html from template
-const templateStream = fs.createReadStream(path.join(__dirname, 'template.html'),{encoding: 'utf8'});
-const articlesStream = fs.createReadStream(path.join(__dirname, 'components', 'articles.html'),{encoding: 'utf8'});
-const footerStream = fs.createReadStream(path.join(__dirname, 'components', 'footer.html'),{encoding: 'utf8'});
-const headerStream = fs.createReadStream(path.join(__dirname, 'components', 'header.html'),{encoding: 'utf8'});
+const buildHtml = async () => {
+  await fs.promises.copyFile(path.join(__dirname, 'template.html'), path.join(__dirname, 'project-dist', 'index.html'));
+  const files = await fs.promises.readdir(path.join(__dirname, 'components'));
+  let template = await fs.promises.readFile(path.join(__dirname, 'template.html'), {encoding: 'utf-8'})
+  await Promise.all(files.map(file => new Promise(async (res) => {
+    const chunk = await fs.promises.readFile(path.join(__dirname, 'components', file), {encoding: 'utf-8'})
+    template = template.replace(`{{${file.split('.')[0]}}}`, chunk);
+    res();
+  })))
+  await fs.promises.writeFile(path.join(__dirname, 'project-dist', 'index.html'), template,{flags: 'w'})
+}
 
-const htmlWriteStream = fs.createWriteStream(path.join(__dirname, 'project-dist', 'index.html'), {flags: 'w'});
+buildHtml()
 
-templateStream.on('data', (chunk) => {
-  articlesStream.on('data', (data) => {
-    chunk = chunk.replace('{{articles}}', data);
-    footerStream.on('data', (fData) => {
-      chunk = chunk.replace('{{footer}}', fData);
-      headerStream.on('data', (hData) => {
-        chunk = chunk.replace('{{header}}', hData);
-        htmlWriteStream.write(chunk);
-      });
-    });
-  });
-});
