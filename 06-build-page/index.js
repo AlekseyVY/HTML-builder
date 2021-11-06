@@ -36,21 +36,22 @@ copyDir(src, dest);
 
 
 // build css bundle and copy
-const writeStream = fs.createWriteStream(path.join(__dirname, 'project-dist', 'style.css'), {flags: 'w'});
-
-fs.readdir(path.join(__dirname, 'styles'),{withFileTypes: true}, (err, files) => {
-  if (err) process.stderr.write(err);
-  files.forEach((file) => {
-    fs.stat(path.join(__dirname, 'styles', file.name), (err, stats) => {
-      if(!stats.isDirectory() && path.extname(path.join(__dirname, 'styles', file.name)) === '.css') {
-        const readStream = fs.createReadStream(path.join(__dirname,'styles', file.name),{encoding: 'utf8'});
-        readStream.on('data', (chunk) => {
-          writeStream.write(chunk);
-        });
+const buildCSS = async () => {
+  const files = await fs.promises.readdir(path.join(__dirname, 'styles'), {withFileTypes: true});
+  const writeStream = fs.createWriteStream(path.join(__dirname, 'project-dist', 'style.css'), {flags: 'w'})
+  let template = []
+  await Promise.all(files.map(file => new Promise(async (res) => {
+      if(file.isFile() && path.extname(path.join(__dirname, 'styles', file.name)) === '.css') {
+        const chunk = await fs.promises.readFile(path.join(__dirname, 'styles', file.name), {encoding: 'utf-8'})
+        template.push(chunk)
+        writeStream.write(chunk);
+        writeStream.write('\n');
+        res();
       }
-    });
-  });
-});
+  })))
+}
+
+buildCSS()
 
 
 // build html from template
