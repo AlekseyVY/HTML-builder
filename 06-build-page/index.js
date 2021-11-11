@@ -1,6 +1,6 @@
 const fs = require('fs');
 const { type } = require('os');
-const path = require('path/posix');
+const path = require('path');
 
 
 try {
